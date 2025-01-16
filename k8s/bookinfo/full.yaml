@@ -282,12 +282,14 @@ metadata:
   labels:
     app: productpage
     service: productpage
+    advertise: bgp
 spec:
   ports:
   - port: 9080
     name: http
   selector:
     app: productpage
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: ServiceAccount
