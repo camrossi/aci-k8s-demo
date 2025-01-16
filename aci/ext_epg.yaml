@@ -2,7 +2,7 @@
 ---
 
 - name: Create Tenant prod
-  hosts: fab2
+  hosts: fab2-apic1.cam.ciscolabs.com
   connection: local
   gather_facts: no
 
@@ -18,7 +18,7 @@
       state: present
 
   vars_files:
-    - ./tn_gitops_vms_vars.yaml
+    - ./ext_epg_vars.yaml
 
   tasks:
     - name: Add a new ExtEpg
