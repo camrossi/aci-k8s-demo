@@ -1,0 +1,6 @@
+tenant_name: cilium-bgp
+l3out_name: services
+
+ext_epg:
+  name: svc1
+
