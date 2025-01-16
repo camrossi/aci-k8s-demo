@@ -2,4 +2,4 @@ apic:
   tenants:
     - name: cilium-bgp
       application_profiles:
-        - name: book
+        - name: book2
