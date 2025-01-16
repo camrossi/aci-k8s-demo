@@ -1,0 +1,5 @@
+apic:
+  tenants:
+    - name: cilium-bgp
+      application_profiles:
+        - name: test
