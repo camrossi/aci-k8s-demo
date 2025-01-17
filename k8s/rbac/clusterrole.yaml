@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: svc-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["services"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: service-reader-binding
+subjects:
+- kind: ServiceAccount
+  name: aap
+  namespace: kube-system  # This should match the namespace of your service account
+roleRef:
+  kind: ClusterRole
+  name: svc-reader
+  apiGroup: rbac.authorization.k8s.io
