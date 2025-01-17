@@ -1,4 +1,6 @@
-rules:
-  - name: Test
-    action:
-      debug:
+- name: Test
+  rules:
+      - name: Test
+        condition: event.payload
+        action:
+          debug:
