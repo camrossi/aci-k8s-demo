@@ -1,3 +1,4 @@
 ---
 collections:  
   - name: cisco.aci
+  - name: kubernetes.core

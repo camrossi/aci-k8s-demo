@@ -1,0 +1,108 @@
+# ACI playbook - Create Tenant prod including networking and contracts
+---
+
+- name: Gather Service Status
+  connection: local
+  gather_facts: false
+
+  hosts: cilium-bgp-1.cam.ciscolabs.com
+  tasks:
+    - name: Get a list of all service objects
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Service
+        kubeconfig: ~/Coding/k8s_clusters/cilium-bgp/talos_configs/kubeconfig
+        namespace: bookinfo
+        field_selectors:
+          - spec.type=LoadBalancer
+      register: service_list
+
+    - name: Extract and print the IPs of the services
+      set_fact:
+        service_ips_with_names: "{{ dict(service_list.resources | map(attribute='metadata.name') | list | zip(service_list.resources | map(attribute='status.loadBalancer.ingress') | map('first') | map(attribute='ip') | list)) }}"
+   
+    - name: Print the service IPs
+      debug:
+        var: service_ips_with_names
+
+- name: Add a new ExtEpg against a different host
+  hosts: inb-fab2-apic1.cam.ciscolabs.com
+  gather_facts: no
+  connection: local
+  vars:
+    aci_login: &aci_login
+      host: "{{ ansible_host }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password | default(omit) }}"
+      private_key: "{{ aci_private_key | default(omit) }}"
+      certificate_name: "{{ aci_certificate_name | default(omit) }}"
+      validate_certs: "{{ aci_validate_certs }}"
+      annotation: "orchestrator:ansible"
+      state: present
+    service_ips_with_names: "{{ hostvars['cilium-bgp-1.cam.ciscolabs.com']['service_ips_with_names'] }}"
+  vars_files:
+    - ./ext_epg_vars.yaml
+    - ./aci-credentials.yaml
+
+  tasks:
+# Get Current state:
+    - name: Get the current state of the L3Out
+      cisco.aci.aci_l3out_extepg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        l3out: "{{ l3out_name }}"
+        state: query
+      register: l3out_extepg
+
+    - name: Print the current state of the L3Out
+      ansible.builtin.debug:
+        var: l3out_extepg
+
+    - name: Extract the names of the current L3Out ExtEpgs
+      ansible.builtin.set_fact:
+        l3out_extepg_names: "{{ l3out_extepg.current[0].l3extOut.children | map(attribute='l3extInstP.attributes.name') | list }}"
+
+    - name: Print the current state of the L3Out
+      ansible.builtin.debug:
+        var: l3out_extepg_names
+
+    - name: Calcualte the difference
+      ansible.builtin.set_fact:
+        missing_ext_epgs: "{{ service_ips_with_names.keys() | difference(l3out_extepg_names) }}"
+        stale_ext_epgs: "{{ l3out_extepg_names | difference(service_ips_with_names.keys()) }}"
+
+    - name: Print the difference
+      ansible.builtin.debug:
+        var: missing_ext_epgs, stale_ext_epgs
+
+    - name: Add a new ExtEpg
+      cisco.aci.aci_l3out_extepg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        l3out: "{{ l3out_name }}"
+        name: "{{ item }}"
+        state: present
+      loop: "{{ service_ips_with_names.keys() }}"
+      when: item in missing_ext_epgs
+
+    ### I still add an external Subnet even if the ExtEpg is already present in case the IP has changed.
+    ### I think is faster/simpler than bothering about calculating a different for this as well
+    - name: Add a new External Subnet
+      cisco.aci.aci_l3out_extsubnet:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        l3out: "{{ l3out_name }}"
+        name: "{{ item.key }}"
+        description: External Subnet for Production ExtEpg
+        network: "{{ item.value }}/32"
+        state: present
+      loop: "{{ lookup('dict', service_ips_with_names, wantlist=True) }}"
+
+    - name: Delate Stale ExtEpg
+      cisco.aci.aci_l3out_extepg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        l3out: "{{ l3out_name }}"
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ service_ips_with_names.keys() }}"
