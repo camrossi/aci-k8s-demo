@@ -1,6 +1,14 @@
 # ACI playbook - Create Tenant prod including networking and contracts
 ---
 
+- name: Intall K8s Plugin
+
+  hosts: localhost
+  tasks:
+    - name: Install a Python package using pip
+      ansible.builtin.pip:
+        name: "kubernetes"
+
 - name: Gather Service Status
   connection: local
   gather_facts: false
