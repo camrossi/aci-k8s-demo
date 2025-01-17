@@ -3,7 +3,7 @@
   sources:
     - name: argo
   rules:
-      - name: Test
-        condition: event.payload
-        action:
-          debug:
+    - name: Test
+      condition: event.payload
+      action:
+        debug:
