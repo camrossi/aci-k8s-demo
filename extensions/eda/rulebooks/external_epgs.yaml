@@ -1,7 +1,7 @@
 ---
 - name: Test
   sources:
-    - ansible.eda.webhook
+    - name: argo
   rules:
       - name: Test
         condition: event.payload
