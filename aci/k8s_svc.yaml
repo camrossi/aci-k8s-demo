@@ -11,7 +11,7 @@
       kubernetes.core.k8s_info:
         api_version: v1
         kind: Service
-        api_key: "{{ ansible_cilium_bgp_1 }}"
+        api_key: lookup('env', 'cilium_bgp_1')
         namespace: bookinfo
         field_selectors:
           - spec.type=LoadBalancer
@@ -81,7 +81,6 @@
         tenant: "{{ tenant_name }}"
         l3out: "{{ l3out_name }}"
         name: "{{ namespace }}_{{ item }}"
-        state: present
       loop: "{{ service_ips_with_names.keys() }}"
       when: item in missing_ext_epgs
 
@@ -95,7 +94,6 @@
         name: "{{ namespace }}_{{ item.key }}"
         description: External Subnet for Production ExtEpg
         network: "{{ item.value }}/32"
-        state: present
       loop: "{{ lookup('dict', service_ips_with_names, wantlist=True) }}"
 
     - name: Delate Stale ExtEpg
