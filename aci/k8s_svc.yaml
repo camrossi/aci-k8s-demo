@@ -11,7 +11,7 @@
       kubernetes.core.k8s_info:
         api_version: v1
         kind: Service
-        api_key: "{{ cilium-bgp-1.cam.ciscolabs.com }}"
+        api_key: "{{ cilium_bgp_1 }}"
         namespace: bookinfo
         field_selectors:
           - spec.type=LoadBalancer
