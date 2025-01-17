@@ -4,7 +4,7 @@
     - name: argo
   rules:
     - name: Test
-      condition: event.payload
+      condition: event.meta.eda_event_stream_name == 'argocd'
       action:
         run_job_template:
         name: ManageExtEPGs
