@@ -7,9 +7,9 @@
       condition: event.meta.eda_event_stream_name == 'argocd'
       action:
         run_job_template:
-        name: ManageExtEPGs
-        organization: Default
-        job_args:
-          extra_vars:
-             namespace: event.payload.namespace
-             name: event.payload.name
+          name: ManageExtEPGs
+          organization: Default
+          job_args:
+            extra_vars:
+              namespace: event.payload.namespace
+              name: event.payload.name
