@@ -1,3 +1,4 @@
-name: Update External EPGs
-action:
-  debug:
+rules:
+  - name: Test
+    action:
+      debug:
