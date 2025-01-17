@@ -1,5 +1,5 @@
----
 - name: Test
+  hosts: inb-fab2-apic1.cam.ciscolabs.com
   sources:
     - name: argo
   rules:
