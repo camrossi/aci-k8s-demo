@@ -12,7 +12,7 @@
         api_version: v1
         kind: Service
         kubeconfig: ~/Coding/k8s_clusters/cilium-bgp/talos_configs/kubeconfig
-        namespace: bookinfo
+        namespace: "{{ namespace }}"
         field_selectors:
           - spec.type=LoadBalancer
       register: service_list
@@ -80,7 +80,7 @@
         <<: *aci_login
         tenant: "{{ tenant_name }}"
         l3out: "{{ l3out_name }}"
-        name: "{{ item }}"
+        name: "{{ namespace }}_{{ item }}"
         state: present
       loop: "{{ service_ips_with_names.keys() }}"
       when: item in missing_ext_epgs
@@ -92,7 +92,7 @@
         <<: *aci_login
         tenant: "{{ tenant_name }}"
         l3out: "{{ l3out_name }}"
-        name: "{{ item.key }}"
+        name: "{{ namespace }}_{{ item.key }}"
         description: External Subnet for Production ExtEpg
         network: "{{ item.value }}/32"
         state: present
@@ -103,6 +103,6 @@
         <<: *aci_login
         tenant: "{{ tenant_name }}"
         l3out: "{{ l3out_name }}"
-        name: "{{ item }}"
+        name: "{{ namespace }}_{{ item }}"
         state: absent
       loop: "{{ service_ips_with_names.keys() }}"
