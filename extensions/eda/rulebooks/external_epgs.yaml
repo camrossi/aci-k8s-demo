@@ -1,5 +1,7 @@
 ---
 - name: Test
+  sources:
+    - ansible.eda.webhook
   rules:
       - name: Test
         condition: event.payload
