@@ -109,7 +109,7 @@
         <<: *aci_login
         tenant: "{{ tenant_name }}"
         l3out: "{{ l3out_name }}"
-        name: "{{ item }}"
+        extepg: "{{ item }}"
         contract: oob
         contract_type: provider
         state: present
