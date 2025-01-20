@@ -6,7 +6,12 @@
   gather_facts: false
 
   hosts: cilium-bgp-1.cam.ciscolabs.com
+  
   tasks:
+    - name: Print environment variable cilium_bgp_1
+      ansible.builtin.debug:
+        msg: lookup('env', 'cilium_bgp_1')
+
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
         api_version: v1
