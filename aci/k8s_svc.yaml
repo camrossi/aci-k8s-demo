@@ -92,7 +92,7 @@
       loop: "{{ service_ips_with_names.keys() }}"
       when: item in missing_ext_epgs
 
-    ### I still add an external Subnet even if the ExtEpg is already present in case the IP has changed.
+    ### I still add an external Subnet and Contract even if the ExtEpg is already present in case the IP has changed.
     ### I think is faster/simpler than bothering about calculating a different for this as well
     - name: Add a new External Subnet
       cisco.aci.aci_l3out_extsubnet:
@@ -109,11 +109,11 @@
         <<: *aci_login
         tenant: "{{ tenant_name }}"
         l3out: "{{ l3out_name }}"
-        name: "{{ item.key }}"
+        name: "{{ item }}"
         contract: oob
         contract_type: provider
         state: present
-      loop: "{{ lookup('dict', service_ips_with_names, wantlist=True) }}"
+      loop: "{{ service_ips_with_names.keys() }}"
 
     - name: Delate Stale ExtEpg
       cisco.aci.aci_l3out_extepg:
