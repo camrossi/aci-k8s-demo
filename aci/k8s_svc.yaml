@@ -10,13 +10,13 @@
   tasks:
     - name: Print all the env Variables
       ansible.builtin.debug:
-        msg: "{{ lookup('env') }}"
+        msg: "{{ lookup('env', 'K8S_API_TOKEN') }}"
 
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
         api_version: v1
         kind: Service
-        api_key: "{{ lookup('env', 'cilium_bgp_1') }}"
+        api_key: "{{ lookup('env', 'K8S_API_TOKEN') }}"
         host: https://cilium-bgp-1.cam.ciscolabs.com:6443
         validate_certs: no
         namespace: bookinfo
