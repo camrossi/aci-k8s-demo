@@ -1,19 +1,11 @@
 # ACI playbook - Create Tenant prod including networking and contracts
 ---
 
-- name: Intall K8s Plugin
-
-  hosts: localhost
-  tasks:
-    - name: Install a Python package using pip
-      ansible.builtin.pip:
-        name: "kubernetes"
-
 - name: Gather Service Status
   connection: local
   gather_facts: false
 
-  hosts: cilium-bgp-1.cam.ciscolabs.com
+  hosts: cilium-bgp-1.cam.ciscolabs.com:6443
   tasks:
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
