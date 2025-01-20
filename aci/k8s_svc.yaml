@@ -10,8 +10,7 @@
   tasks:
     - name: Print environment variable cilium_bgp_1
       ansible.builtin.debug:
-        msg: 
-        " all environment variables are {{ lookup('env', '*') }}"
+        msg: "all environment variables are {{ lookup('env', '*') }}"
 
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
