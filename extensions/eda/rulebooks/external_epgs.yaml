@@ -11,5 +11,5 @@
           organization: Default
           job_args:
             extra_vars:
-              namespace: event.payload.namespace
-              name: event.payload.name
+              namespace: event.payload.body.namespace
+              name: event.payload.body.name
