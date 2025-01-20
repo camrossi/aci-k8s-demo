@@ -12,7 +12,7 @@
         api_version: v1
         kind: Service
         api_key: lookup('env', 'cilium_bgp_1')
-        host: cilium-bgp-1.cam.ciscolabs.com:6443
+        host: https://cilium-bgp-1.cam.ciscolabs.com:6443
         namespace: bookinfo
         field_selectors:
           - spec.type=LoadBalancer
