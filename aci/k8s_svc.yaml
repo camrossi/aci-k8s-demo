@@ -11,6 +11,10 @@
 
   tasks:
 
+    - name: Print the namespace
+      ansible.builtin.debug:
+        var: "{{ namespace }}"
+        
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
         api_version: v1
