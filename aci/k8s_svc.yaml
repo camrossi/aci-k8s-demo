@@ -8,9 +8,9 @@
   hosts: cilium-bgp-1.cam.ciscolabs.com
 
   tasks:
-    - name: Print environment variable cilium_bgp_1
+    - name: Print all the env Variables
       ansible.builtin.debug:
-        msg: '{{ lookup("env", "VMWARE_HOST") }}'
+        msg: "{{ lookup('env') }}"
 
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
