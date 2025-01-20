@@ -13,7 +13,7 @@
 
     - name: Print the namespace
       ansible.builtin.debug:
-        var: '{{ ansible_eda.payload }}'
+        var: '{{ ansible_eda }}'
 
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
@@ -22,7 +22,7 @@
         api_key: "{{ lookup('env', 'K8S_API_TOKEN') }}"
         host: https://cilium-bgp-1.cam.ciscolabs.com:6443
         validate_certs: false
-        namespace: '{{ ansible_eda.payload.namespace }}'
+        namespace: '{{ ansible_eda.namespace }}'
         field_selectors:
           - spec.type=LoadBalancer
       register: service_list
