@@ -13,7 +13,7 @@
 
     - name: Print the namespace
       ansible.builtin.debug:
-        var: "{{ namespace }}"
+        var: '{{ ansible_eda.event }}'
 
     - name: Get a list of all service objects
       kubernetes.core.k8s_info:
