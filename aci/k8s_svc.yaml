@@ -18,7 +18,7 @@
         api_key: "{{ lookup('env', 'K8S_API_TOKEN') }}"
         host: https://cilium-bgp-1.cam.ciscolabs.com:6443
         validate_certs: false
-        namespace: "{{ lookup('env', 'namespace') }}"
+        namespace: "{{ namespace }}"
         field_selectors:
           - spec.type=LoadBalancer
       register: service_list
