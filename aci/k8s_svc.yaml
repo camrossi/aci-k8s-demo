@@ -104,6 +104,17 @@
         network: "{{ item.value }}/32"
       loop: "{{ lookup('dict', service_ips_with_names, wantlist=True) }}"
 
+    - name: Bind a contract to an external EPG
+      cisco.aci.aci_l3out_extepg_to_contract:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        l3out: "{{ l3out_name }}"
+        name: "{{ item.key }}"
+        contract: oob
+        contract_type: provider
+        state: present
+      loop: "{{ lookup('dict', service_ips_with_names, wantlist=True) }}"
+
     - name: Delate Stale ExtEpg
       cisco.aci.aci_l3out_extepg:
         <<: *aci_login
