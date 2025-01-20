@@ -18,7 +18,7 @@
         kind: Service
         api_key: "{{ lookup('env', 'K8S_API_TOKEN') }}"
         host: https://cilium-bgp-1.cam.ciscolabs.com:6443
-        validate_certs: no
+        validate_certs: false
         namespace: bookinfo
         field_selectors:
           - spec.type=LoadBalancer
@@ -29,24 +29,26 @@
         service_ips_with_names: "{{ dict(service_list.resources | map(attribute='metadata.name') | list | zip(service_list.resources | map(attribute='status.loadBalancer.ingress') | map('first') | map(attribute='ip') | list)) }}"
    
     - name: Print the service IPs
-      debug:
+      ansible.builtin.debug:
         var: service_ips_with_names
 
 - name: Add a new ExtEpg against a different host
   hosts: inb-fab2-apic1.cam.ciscolabs.com
-  gather_facts: no
+  gather_facts: false
   connection: local
   vars:
     aci_login: &aci_login
       host: "{{ ansible_host }}"
-      username: "{{ aci_username }}"
-      password: "{{ aci_password | default(omit) }}"
+      username: '{{ ansible_user }}'
+      password: '{{ ansible_password }}'
       private_key: "{{ aci_private_key | default(omit) }}"
       certificate_name: "{{ aci_certificate_name | default(omit) }}"
       validate_certs: "{{ aci_validate_certs }}"
       annotation: "orchestrator:ansible"
       state: present
+
     service_ips_with_names: "{{ hostvars['cilium-bgp-1.cam.ciscolabs.com']['service_ips_with_names'] }}"
+
   vars_files:
     - ./ext_epg_vars.yaml
     - ./aci-credentials.yaml
