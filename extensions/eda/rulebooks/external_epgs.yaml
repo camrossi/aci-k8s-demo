@@ -1,9 +1,9 @@
-- name: Test
+- name: ArgoListener
   hosts: inb-fab2-apic1.cam.ciscolabs.com
   sources:
     - name: argo
   rules:
-    - name: Test
+    - name: UpdateExtEPGs
       condition: event.meta.eda_event_stream_name == 'argocd'
       action:
         run_job_template:
