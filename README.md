@@ -84,8 +84,8 @@ In case you want to replicate this workflow in your lab you will need the follow
 ## Kubernetes:
 
 My Kubernetes Cluster, for this demo, is composed of:
-- 3 Talos Control Plane Nodes running as VMs inside OpenShift
-- 2 Talos Ingress Nodes running as VMs inside OpenShift
+- 3 Control Plane Nodes running as VMs inside OpenShift
+- 2 Ingress Nodes running as VMs inside OpenShift
 - 3 Raspberry Pi 4
 
 Running [Talos Linux ](https://www.talos.dev/). If you are reading this guide I do expect you to be able to deploy a K8s Cluster. 
