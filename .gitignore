@@ -1,5 +1,5 @@
 aci/inventory.yaml
 aci/aci-credentials.yaml
 .vscode/*
-execution-environment/builder
+execution-environment
 execution-environment/README.md

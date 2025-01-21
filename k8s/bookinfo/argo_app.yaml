@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.eda: ""
+  name: bookinfo
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: bookinfo
+    server: https://cilium-bgp-1.cam.ciscolabs.com:6443
+  project: default
+  source:
+    path: k8s/bookinfo
+    repoURL: https://github.com/camrossi/aci-k8s-demo.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
