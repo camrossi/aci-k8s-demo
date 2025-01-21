@@ -4,9 +4,7 @@
 - name: Gather Service Status
   connection: local
   gather_facts: false
-  vars_files:
-    - ./ext_epg_vars.yaml
-    - ./aci-credentials.yaml
+
   hosts: cilium-bgp-1.cam.ciscolabs.com
 
   tasks:
@@ -27,15 +25,23 @@
           - spec.type=LoadBalancer
       register: service_list
 
-    - name: Extract and print the IPs of the services
-      set_fact:
-        service_ips_with_names: "{{ dict(service_list.resources | map(attribute='metadata.name') | map('regex_replace', '^(.*)$', namespace + '_\\1') | list | zip(service_list.resources | map(attribute='status.loadBalancer.ingress') | map('first') | map(attribute='ip') | list)) }}"
-   
-    - name: Print the service IPs
+    - name: Extract the IPs of the services and prepend the namespace
+      ansible.builtin.set_fact:
+        service_ips_with_names: "{{ dict(service_list.resources
+          | map(attribute='metadata.name')
+          | map('regex_replace', '^(.*)$', namespace + '_\\1')
+          | list
+          | zip(service_list.resources
+          | map(attribute='status.loadBalancer.ingress')
+          | map('first')
+          | map(attribute='ip')
+          | list)) }}"
+
+    - name: Service IPs with Names
       ansible.builtin.debug:
         var: service_ips_with_names
 
-- name: Add a new ExtEpg against a different host
+- name: Add a new ExtEpg to the L3Out
   hosts: inb-fab2-apic1.cam.ciscolabs.com
   gather_facts: false
   connection: local
@@ -50,11 +56,10 @@
       annotation: "orchestrator:ansible"
       state: present
 
+    # import the variables from the previous play
     service_ips_with_names: "{{ hostvars['cilium-bgp-1.cam.ciscolabs.com']['service_ips_with_names'] }}"
-
-  vars_files:
-    - ./ext_epg_vars.yaml
-    - ./aci-credentials.yaml
+    tenant_name: cilium-bgp
+    l3out_name: services
 
   tasks:
 # Get Current state:
