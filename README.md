@@ -150,7 +150,7 @@ This rule book is configured to:
         }
     ```
 
-* Create a Project Using the Rule Book:
+* Create a Project Using the `Rule Book`:
     * Name: A name
     * Source control URL: Your Git Repo
     * Source control branch/tag/commit: main (or what you want to use)
@@ -175,18 +175,24 @@ This rule book is configured to:
     podman push harbor.cam.ciscolabs.com/library/custom-ee --tls-verify=false
     ```
 * Create the required Credentials:
-    * ACI: For this I create a simple `machine type` credentials that uses username and password.
+    * ACI: For this I create a simple `Network` type credentials that uses username and password.
         * Name: A name
         * Organization: Default 
-        * Credential type: Machine
+        * Credential type: Network
         * Username: Your User Name
         * Password: Your Password
+        * Note: The credentials can be accessed from the playbook by using the following environment variables:  `ANSIBLE_NET_USERNAME` and `ANSIBLE_NET_PASSWORD`
     * K8s: For this we can use the `OpenShift or Kubernetes API Bearer Token`
         * Name: A name
         * Organization: Default 
         * Credential type: OpenShift or Kubernetes API Bearer Token
         * OpenShift or Kubernetes API Endpoint: Your API URL Endpoint
         * API authentication bearer token: The Token we generated before
+        * Note: The credentials can be accessed from the playbook by using the following environment variables: `K8S_AUTH_API_KEY` `K8S_AUTH_HOST` and `K8S_AUTH_VERIFY_SSL` this is currently not documented in OpenShift but I opened an ticket with them to have the config guide updated. 
+
+* Create the `Inventory` and `Hosts`: We will need an inventory containing both the `APIC` and `K8s API` Endpoints. For example I have an inventory called `cilium-bgp-1-infra` that contains 2 hosts: `cilium-bgp-1.cam.ciscolabs.com` and `inb-fab2-apic1.cam.ciscolabs.com`
+
+* Create the Ansible Playbook:
 
 
 ## ArgoCD 
