@@ -129,7 +129,7 @@ I installed `Ansible Automation Platform` in my `OpenShift` cluster using the `O
     
     Notes: 
     * Once the Event Stream is created it will generate a `url` this will be used as the webhook URL in `ArgoCD`
-    * Debug Top Tip: Disable `Forward events to rulebook activation` to visualize on the UI the data `ArgCD` is seeing to the Even Stream. 
+    * Debug Top Tip: Disable `Forward events to rulebook activation` to visualize on the UI the data `ArgCD` is sending to the Even Stream. 
 
 * Create a Decision Environment: 
     * Image: quay.io/ansible/ansible-rulebook:v1.1.2
@@ -168,13 +168,26 @@ This rule book is configured to:
 
 
 * Create a new execution Environment Container: For this workflow I am using the `kubernetes.core` galaxy collection and it requires the `kubernetes` python library. This library is not available in the standard execution environment. To build one you can use the `ansible-builder` pip package and this [Config](execution-environment/builder/execution-environment.yml).
-    * This step MUST be done on a RHEL machine registered to subscription manager or the openshift-client installation will fail.
+    * This step MUST be done on a RHEL machine registered to subscription manager or the `openshift-client` installation will fail. (this is a dependency of the `kubernetes` python library)
     * Push the image to a Container Registry
     ```shell
     ansible-builder build -v3 --build-arg HTTPS_PROXY="http://proxy:80" -t harbor.cam.ciscolabs.com/library/custom-ee:latest
     podman push harbor.cam.ciscolabs.com/library/custom-ee --tls-verify=false
     ```
-==== ADD MISSING STEPS ====
+* Create the required Credentials:
+    * ACI: For this I create a simple `machine type` credentials that uses username and password.
+        * Name: A name
+        * Organization: Default 
+        * Credential type: Machine
+        * Username: Your User Name
+        * Password: Your Password
+    * K8s: For this we can use the `OpenShift or Kubernetes API Bearer Token`
+        * Name: A name
+        * Organization: Default 
+        * Credential type: OpenShift or Kubernetes API Bearer Token
+        * OpenShift or Kubernetes API Endpoint: Your API URL Endpoint
+        * API authentication bearer token: The Token we generated before
+
 
 ## ArgoCD 
 
