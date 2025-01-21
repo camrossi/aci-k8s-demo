@@ -1,0 +1,34 @@
+---
+# https://ansible.readthedocs.io/projects/builder/en/latest/definition/
+
+# This is an example for ansible-builder version 3, in this example
+# This example installs bind-utils,git-core with bindep.txt and terraform, azure-cli binaries to the main image in append_base 
+# Also pynetbox as a python package, awx.awx, community.general as ansible galaxy modules.
+
+# This example is using awx-ee:23.8.0 as base image
+
+version: 3
+
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest
+options:
+  package_manager_path: /usr/bin/microdnf
+
+dependencies:
+  python_interpreter:
+    package_system: python3.12
+    python_path: /usr/bin/python3.12
+  ansible_core:
+    package_pip: ansible-core
+  ansible_runner:
+    package_pip: ansible-runner
+  system: dependencies/bindep.txt
+  python: dependencies/requirements.txt
+  galaxy: dependencies/requirements.yml
+
+additional_build_steps:
+  prepend_builder:
+    - ENV PKGMGR_OPTS="--nodocs --setopt=install_weak_deps=0 --setopt=rhocp-4.17-for-rhel-9-x86_64-rpms.enabled=true"
+  prepend_final:
+    - ENV PKGMGR_OPTS="--nodocs --setopt=install_weak_deps=0 --setopt=rhocp-4.17-for-rhel-9-x86_64-rpms.enabled=true"
