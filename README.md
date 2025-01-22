@@ -279,7 +279,18 @@ spec:
         password: <Pass>
       insecureSkipVerify: true
 ```
+### ArgoCD App
 
+You can now create your ArgoCD applications, you will just need to add the following annotations to trigger the webhook when the App is successfully `Synced` or `Deleted`
+
+```yaml
+metadata:
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.eda: ""
+    notifications.argoproj.io/subscribe.on-deleted.eda: ""
+```
+
+A demo App config can be found here: [argo_app.yaml](k8s/argo/argo_app.yaml)
 # Demo
 
 With all the components now set up, we are ready to deploy applications and seamlessly add or remove Services of Type LoadBalancer. The Cisco ACI fabric will automatically adjust its configuration to accommodate these changes, demonstrating the power of our integrated system.
