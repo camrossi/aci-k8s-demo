@@ -288,4 +288,4 @@ This demonstration is designed to be straightforward, focusing on exposing servi
 
 This demo serves as a foundation for exploring the extensive capabilities of these technologies, providing a glimpse into how they can be tailored to meet diverse operational needs.
 
-![Unified GitOps and NetOps with ACI, K8s, Ansible and ArgoCD](https://raw.githubusercontent.com/camrossi/aci-k8s-demo/refs/heads/main/demo/demo.mp4)
+Video Demo: [Unified GitOps and NetOps with ACI, K8s, Ansible and ArgoCD](https://raw.githubusercontent.com/camrossi/aci-k8s-demo/refs/heads/main/demo/demo.mp4)
