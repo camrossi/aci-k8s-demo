@@ -164,8 +164,9 @@ This rule book is configured to:
     * Credential: Select the Credentials for the Ansible Automation Platform.
     * Decision environment: Default
 
-### Set up Automation Execution:
+Note: Every time you change the Status of the GitRepo you need to Sync the Project for the `external_epgs.yaml` rule book to be updated locally. 
 
+### Set up Automation Execution:
 
 * Create a new execution Environment Container: For this workflow I am using the `kubernetes.core` galaxy collection and it requires the `kubernetes` python library. This library is not available in the standard execution environment. To build one you can use the `ansible-builder` pip package and this [Config](execution-environment/builder/execution-environment.yml).
     * This step MUST be done on a RHEL machine registered to subscription manager or the `openshift-client` installation will fail. (this is a dependency of the `kubernetes` python library)
@@ -192,13 +193,46 @@ This rule book is configured to:
 
 * Create the `Inventory` and `Hosts`: We will need an inventory containing both the `APIC` and `K8s API` Endpoints. For example I have an inventory called `cilium-bgp-1-infra` that contains 2 hosts: `cilium-bgp-1.cam.ciscolabs.com` and `inb-fab2-apic1.cam.ciscolabs.com`
 
-* Create the Ansible Playbook:
+* Create the Ansible Playbook: For this automation workflow I am using the [k8s_svc](aci/k8s_svc.yaml) playbook. This playbook does the following:
+    * Kubernetes Tasks:
+        * Get a list of all service objects from K8s that are part of my Application Namespace and of type `LoadBalancer`
+        * Create a dictionary that uses as key the <namespace>_<service_name> and as value the service IP
+    * ACI Tasks:
+        * Get the current state of the L3Out
+        * Create a list of the extEPG  names currently in the L3Out
+        * Calculate which extEPG needs to be added and which needs to be removed
+        * If an extEPG is missing add it
+        * Update the extEPG Subnet
+        * Update the extEPG Contract (currently the contract name is hard coded)
+        * Delate ExtEpg that are not anymore needed
+
+* Create a Project Using the Ansible Playbook:
+    * Name: A name
+    * Organization: Default
+    * Execution environment: The execution environment we created
+    * Source control type: Git
+    * Source control URL: Your Git Repo
+    * Source control branch/tag/commit: main (or what you want to use)
+
+* Create job template:
+    * Name: A name
+    * Job type: Run
+    * Inventory: Our inventory
+    * Project: Our Project
+    * Playbook: `aci/k8s_svc.yaml`
+    * (Optional) Execution environment: The execution environment we created, this should not be needed if you have set it already in the Job
+    * Credentials: Select the ACI and K8s credentials
+    * Extra variables: This is **very important**: In order to receive the Event Driven Automation variables (the namespace name) you need to enable `Prompt on launch` or the variable will not be set.
+        * I also set here `aci_validate_certs: 'no'` but this could be set also in other places.
+
+Note: Every time you change the Status of the GitRepo you need to Sync the Project for the `k8s_svc.yaml` play book to be updated locally. 
 
 
 ## ArgoCD 
 
 I installed `ArgoCD` in my `OpenShift` cluster using the `OperatorHub`. Once ArgoCD is installed we need to connect it to the K8s cluster.
 This can be done by using the `argocd cluster add` command.
+
 ```
 export KUBECONFIG=<kubeconfig>
 kubectl config get-contexts
@@ -248,4 +282,9 @@ spec:
 
 # Demo
 
-=== Insert Video Of a Demo ===
+With all the components now set up, we are ready to deploy applications and seamlessly add or remove Services of Type LoadBalancer. The Cisco ACI fabric will automatically adjust its configuration to accommodate these changes, demonstrating the power of our integrated system.
+
+This demonstration is designed to be straightforward, focusing on exposing services to my Lab Network. However, the true potential lies in the flexibility of this setup. By modifying the playbook, it can be easily adapted to support more complex use cases, such as integrating with production environments or implementing advanced network policies.
+
+This demo serves as a foundation for exploring the extensive capabilities of these technologies, providing a glimpse into how they can be tailored to meet diverse operational needs.
+

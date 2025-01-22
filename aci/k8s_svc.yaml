@@ -25,7 +25,7 @@
           - spec.type=LoadBalancer
       register: service_list
 
-    - name: Extract the IPs of the services and prepend the namespace
+    - name: Get a dic of service names and IPs
       ansible.builtin.set_fact:
         service_ips_with_names: "{{ dict(service_list.resources
           | map(attribute='metadata.name')
@@ -41,7 +41,7 @@
       ansible.builtin.debug:
         var: service_ips_with_names
 
-- name: Add a new ExtEpg to the L3Out
+- name: Update L3OUT Configuration
   hosts: inb-fab2-apic1.cam.ciscolabs.com
   gather_facts: false
   connection: local
@@ -71,7 +71,7 @@
         state: query
       register: l3out_extepg
 
-    - name: Extract the names of the current L3Out ExtEpgs
+    - name: Create a list of the extEPG names currently in the L3Out
       ansible.builtin.set_fact:
         l3out_extepg_names: "{{ l3out_extepg.current[0].l3extOut.children | default([]) | map(attribute='l3extInstP.attributes.name') | list }}"
 
@@ -79,7 +79,7 @@
       ansible.builtin.debug:
         var: l3out_extepg_names
 
-    - name: Calcualte the difference
+    - name: Calculate which extEPG needs to be added and which needs to be removed
       ansible.builtin.set_fact:
         missing_ext_epgs: "{{ service_ips_with_names.keys() | difference(l3out_extepg_names) }}"
         stale_ext_epgs: "{{ l3out_extepg_names | difference(service_ips_with_names.keys()) }}"
@@ -120,7 +120,7 @@
         state: present
       loop: "{{ service_ips_with_names.keys() }}"
 
-    - name: Delate Stale ExtEpg
+    - name: Delate ExtEpg that are not anymore needed
       cisco.aci.aci_l3out_extepg:
         <<: *aci_login
         tenant: "{{ tenant_name }}"
