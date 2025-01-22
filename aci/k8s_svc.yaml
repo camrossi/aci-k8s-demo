@@ -75,7 +75,7 @@
       ansible.builtin.set_fact:
         l3out_extepg_names: "{{ l3out_extepg.current[0].l3extOut.children | default([])
           | map(attribute='l3extInstP.attributes.name')
-          | select('search', '(?!' + namespace | string + '_).*')
+          | select('search', '^(' namespace | string + '_).*')
           | list }}"
 
     - name: Print the current state of the L3Out
