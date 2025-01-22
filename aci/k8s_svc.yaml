@@ -71,9 +71,12 @@
         state: query
       register: l3out_extepg
 
-    - name: Create a list of the extEPG names currently in the L3Out
+    - name: Create a list of the extEPG names currently in the L3Out ignoring the one from a different namespace
       ansible.builtin.set_fact:
-        l3out_extepg_names: "{{ l3out_extepg.current[0].l3extOut.children | default([]) | map(attribute='l3extInstP.attributes.name') | list }}"
+        l3out_extepg_names: "{{ l3out_extepg.current[0].l3extOut.children | default([])
+          | map(attribute='l3extInstP.attributes.name')
+          | select('search', '^(?!' + namespace | string + '_).*')
+          | list }}"
 
     - name: Print the current state of the L3Out
       ansible.builtin.debug:
