@@ -4,11 +4,11 @@ metadata:
   annotations:
     notifications.argoproj.io/subscribe.on-sync-succeeded.eda: ""
     notifications.argoproj.io/subscribe.on-deleted.eda: ""
-  name: bookinfo-app-a
+  name: bookinfo-app-b
   namespace: openshift-gitops
 spec:
   destination:
-    namespace: bookinfo-app-a
+    namespace: bookinfo-app-b
     server: https://cilium-bgp-1.cam.ciscolabs.com:6443
   project: default
   source:

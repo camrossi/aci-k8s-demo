@@ -71,6 +71,7 @@
         state: query
       register: l3out_extepg
 
+    # Currently the format is hardcoded to be namespace_service-name so we can filter out the ones that are not from the current namespace
     - name: Create a list of the extEPG names currently in the L3Out ignoring the one from a different namespace
       ansible.builtin.set_fact:
         l3out_extepg_names: "{{ l3out_extepg.current[0].l3extOut.children | default([])
