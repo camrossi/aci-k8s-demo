@@ -1,6 +1,6 @@
 aci/inventory.yaml
 aci/aci-credentials.yaml
 .vscode/*
-execution-environment
+execution-environment/context
 execution-environment/README.md
-demo/.DS_Store
+.DS_Store
