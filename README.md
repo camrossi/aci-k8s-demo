@@ -1,4 +1,4 @@
-# ACI K8S and Ansible Driven Automation -- WORK IN PROGRESS
+# ACI K8S and Ansible Driven Automation
 
 This GitRepo contains a demo to show how we can leverage the power of Cisco ACI Fabric, Kubernetes and Red Hat Ansible's event-driven automation to dynamically program the ACI fabric.
 Our goal is to efficiently expose a Kubernetes LoadBalancer Service IP, illustrating how these technologies can work in tandem to enhance network agility and responsiveness.
@@ -50,7 +50,7 @@ In case you want to replicate this workflow in your lab you will need the follow
 * Job: The actual task or set of tasks that are executed.
 
 ```mermaid
-    flowchart-elk LR
+    flowchart-elk TD
         O["Operator"]
         GR["Git Repo"]
         subgraph ArgoCD
@@ -64,7 +64,7 @@ In case you want to replicate this workflow in your lab you will need the follow
             JT -- "Triggers Ansible Playbook" --> J
         end
         O -- "Commit Code Into Git" --> GR
-        GR -- "Argo Detect Change in Git Repo" --> KA
+        GR -- "Argo Detect Change in Git" --> KA
         KA -- "Webhook Call, Pass Application Context" --> RBA
         J -- "Update ExtEPG Config" --> APIC
 ```
