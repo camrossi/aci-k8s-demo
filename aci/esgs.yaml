@@ -1,0 +1,15 @@
+# ACI playbook - Create Tenant prod including networking and contracts
+---
+
+- name: Gather Service Status
+  connection: local
+  gather_facts: false
+
+  hosts: cilium-bgp-1.cam.ciscolabs.com
+
+  tasks:
+
+    - name: Print the resources received from the event
+      ansible.builtin.debug:
+        var: '{{ resources }}'
+

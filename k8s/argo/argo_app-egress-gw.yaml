@@ -1,10 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.eda: ""
+    notifications.argoproj.io/subscribe.on-deleted.eda: ""
+    rule: egress
   name: egress-1
   namespace: openshift-gitops
 spec:
   destination:
+    namespace: ""
     server: https://cilium-bgp-1.cam.ciscolabs.com:6443
   project: default
   source:

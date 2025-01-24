@@ -4,6 +4,7 @@ metadata:
   annotations:
     notifications.argoproj.io/subscribe.on-sync-succeeded.eda: ""
     notifications.argoproj.io/subscribe.on-deleted.eda: ""
+    rule: ingress
   name: bookinfo-app-b
   namespace: openshift-gitops
 spec:

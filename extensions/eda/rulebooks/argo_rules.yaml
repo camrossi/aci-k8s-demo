@@ -1,0 +1,23 @@
+- name: ArgoListener
+  hosts: inb-fab2-apic1.cam.ciscolabs.com
+  sources:
+    - name: argo
+  rules:
+    - name: UpdateExtEPGs
+      condition: event.meta.eda_event_stream_name == 'argocd' and event.payload.rule == 'ingress'
+      action:
+        run_job_template:
+          name: ManageExtEPGs
+          organization: Default
+          job_args:
+            extra_vars:
+              namespace: "{{ event.payload.namespace }}"
+    - name: UpdateESGs
+      condition: event.meta.eda_event_stream_name == 'argocd' and event.payload.rule == 'egress'
+      action:
+        run_job_template:
+          name: ManageESGs
+          organization: Default
+          job_args:
+            extra_vars:
+              resources: "{{ event.payload.resources }}"
