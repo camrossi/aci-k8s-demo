@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: egress-1
+  namespace: openshift-gitops
+spec:
+  destination:
+    server: https://cilium-bgp-1.cam.ciscolabs.com:6443
+  project: default
+  source:
+    path: k8s/egress-gw
+    repoURL: https://github.com/camrossi/aci-k8s-demo.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}

@@ -1,0 +1,20 @@
+apiVersion: isovalent.com/v1
+kind: IsovalentEgressGatewayPolicy
+metadata:
+  name: namespace-egress-1
+spec:
+  destinationCIDRs:
+  - 0.0.0.0/0
+  egressGroups:
+  - nodeSelector:
+      matchLabels:
+        kubernetes.io/hostname: egress-cilium-bgp-0
+    egressIP: 192.168.2.97
+  - nodeSelector:
+      matchLabels:
+        kubernetes.io/hostname: egress-cilium-bgp-1
+    egressIP: 192.168.2.101
+  selectors:
+  - podSelector:
+      matchLabels:
+        io.kubernetes.pod.namespace: egress-1
