@@ -12,3 +12,16 @@
     - name: Print the resources received from the event
       ansible.builtin.debug:
         var: resources
+
+    - name: Get a list of all IsovalentEgressGatewayPolicy objects from K8s
+      kubernetes.core.k8s_info:
+        api_version: isovalent.com/v1
+        kind: IsovalentEgressGatewayPolicy
+        api_key: "{{ lookup('env', 'K8S_AUTH_API_KEY') }}"
+        host: "{{ lookup('env', 'K8S_AUTH_HOST') }}"
+        validate_certs: "{{ lookup('env', 'K8S_AUTH_VERIFY_SSL') }}"
+      register: egress_gateways
+
+    - name: Print the egress_gateways received from the event
+      ansible.builtin.debug:
+        var: egress_gateways
