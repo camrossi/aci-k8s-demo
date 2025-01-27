@@ -11,4 +11,5 @@
 
     - name: Print the resources received from the event
       ansible.builtin.debug:
-        var: '{{ resources | to_yaml  }}'
+        var: '{{ resources }}'
+        
