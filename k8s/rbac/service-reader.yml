@@ -15,7 +15,9 @@ rules:
 - apiGroups: [""]
   resources: ["services"]
   verbs: ["get", "list", "watch"]
-
+- apiGroups: ["isovalent.com"]
+  resources: ["isovalentegressgatewaypolicies"]
+  verbs: ["get", "list", "watch"]
 ---
 
 # Step 3: Create the ClusterRoleBinding

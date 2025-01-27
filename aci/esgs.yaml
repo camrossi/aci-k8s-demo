@@ -22,6 +22,10 @@
         validate_certs: "{{ lookup('env', 'K8S_AUTH_VERIFY_SSL') }}"
       register: egress_gateways
 
-    - name: Print the egress_gateways received from the event
+    - name: Extract egressIP from egressGroups
+      ansible.builtin.set_fact:
+        egress_ips: "{{ egress_gateways.resources | map(attribute='spec.egressGroups') | flatten | map(attribute='egressIP') | list }}"
+
+    - name: Print extracted egress IPs
       ansible.builtin.debug:
-        var: egress_gateways
+      var: egress_ips
