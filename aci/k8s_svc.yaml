@@ -119,7 +119,7 @@
         tenant: "{{ tenant_name }}"
         l3out: "{{ l3out_name }}"
         extepg: "{{ item }}"
-        contract: oob
+        contract: cilium-c1-client
         contract_type: provider
         state: present
       loop: "{{ service_ips_with_names.keys() }}"

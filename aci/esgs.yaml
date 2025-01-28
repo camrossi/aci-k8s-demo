@@ -124,6 +124,6 @@
         tenant: "{{ tenant_name }}"
         ap: "{{ app_profile }}"
         esg: "{{ item }}"
-        contract: esg_oob
+        contract: cilium-c1-client-esg
         contract_type: consumer
       loop: "{{ egress_ips_with_names.keys() }}"
