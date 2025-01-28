@@ -286,10 +286,30 @@ In OpenShift his is done by editing the `NotificationsConfiguration` and defying
             eda:
                 method: POST
                 body: |
-                {
+                    {
+                    "rule": "{{.app.metadata.annotations.rule}}",
                     "name": "{{.app.metadata.name}}",
                     "namespace": "{{.app.spec.destination.namespace}}",
-                }
+                    "resources": [
+                        {{range $index, $c := .app.status.resources }}
+                        {
+                        "kind": "{{$c.kind}}",
+                        "name": "{{$c.name}}"
+                        },
+                        {{end}}
+                    ]
+
+                    }
+    template.app-deleted: |-
+      webhook:
+        eda:
+          method: POST
+          body: |
+            {
+              "name": "{{.app.metadata.name}}",
+              "namespace": "{{.app.spec.destination.namespace}}",
+              "rule": "{{.app.metadata.annotations.rule}}",
+            }
 ```
 * A `Service` to define where to send data
 
