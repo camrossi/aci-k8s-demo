@@ -309,6 +309,8 @@ In OpenShift his is done by editing the `NotificationsConfiguration` and defying
               "name": "{{.app.metadata.name}}",
               "namespace": "{{.app.spec.destination.namespace}}",
               "rule": "{{.app.metadata.annotations.rule}}",
+              # resources needs to be set to an empty list as the playbook expects to receive this variable. 
+              "resources": [], 
             }
 ```
 * A `Service` to define where to send data
@@ -349,3 +351,22 @@ Video Demo: [Unified GitOps and NetOps with ACI, K8s, Ansible and ArgoCD](https:
 
 # Demo 2 - POD Initiated Traffic and ESGs
 
+Since this demo is pretty much identical to the previous one I am only providing the code and a few screenshot. If you think a video demo is needed please let me know via a git issue!
+
+The egress gateway features allows for redirecting traffic originating in pods and destined to specific CIDRs outside the cluster to be routed through particular nodes.
+
+When the egress gateway feature is enabled and egress gateway policies are in place, packets leaving the cluster are masqueraded with selected, predictable IPs (egressIP) associated with the egress nodes. As an example, this feature can be used with legacy firewalls to allow traffic to legacy infrastructure only from specific pods within a given namespace. These pods typically have ever-changing IP addresses.
+
+We can harness the capabilities of ACI Endpoint Security Groups (ESGs)  and apply ESG classification to the egress IPs to streamline network management and policy enforcement, enhancing the security and control over outbound traffic at a namespace level.
+
+For example by creating the following [IsovalentEgressGatewayPolicy](k8s/egress-gw/IsovalentEgressGatewayPolicy.yaml) and placing them in an [ArgoCD Application](k8s/argo/argo_app-egress-gw.yaml) the [esgs](aci/esgs.yaml) playbook will be triggered and the ACI fabric will be automatically configured with 3 EGS using IP Based classifications on the `egressIP`
+These EPGs will be created:
+
+![ESG](docs/images/ESGs.png)
+
+Matching on the `egressIP`
+
+![ESG_IP_Selector](docs/images/ESG_IP_Selector.png)
+
+From now on all traffic initiated from any of the selected namespaced in the [IsovalentEgressGatewayPolicy](k8s/egress-gw/IsovalentEgressGatewayPolicy.yaml) will be egressing from the created `ESGs` and we can use ACI contracts to enforce security policies. 
+**Note:** As stated before this is for traffic leaving the cluster, POD to POD communication within the cluster is unaffected and should be secured with Native Kubernetes policies. 
