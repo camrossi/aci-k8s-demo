@@ -24,8 +24,93 @@
 
     - name: Extract egressIP from egressGroups
       ansible.builtin.set_fact:
-        egress_ips: "{{ egress_gateways.resources | map(attribute='spec.egressGroups') | flatten | map(attribute='egressIP') | list }}"
+        egress_ips_with_names: "{{ dict(egress_gateways.resources
+          | map(attribute='metadata.name')
+          | list
+          | zip(egress_gateways.resources
+          | map(attribute='spec.egressGroups')
+          | map('map', attribute='egressIP')
+          | list)) }}"
 
     - name: Print extracted egress IPs
       ansible.builtin.debug:
-      var: egress_ips
+        var: egress_ips_with_names
+
+- name: Update ESG Configuration
+  hosts: inb-fab2-apic1.cam.ciscolabs.com
+  gather_facts: false
+  connection: local
+  vars:
+    aci_login: &aci_login
+      host: "{{ ansible_host }}"
+      username: '{{ lookup("env", "ANSIBLE_NET_USERNAME") }}'
+      password: '{{ lookup("env", "ANSIBLE_NET_PASSWORD") }}'
+      private_key: "{{ aci_private_key | default(omit) }}"
+      certificate_name: "{{ aci_certificate_name | default(omit) }}"
+      validate_certs: "{{ aci_validate_certs | default(false) }}"
+      annotation: "orchestrator:ansible"
+      state: present
+    egress_ips_with_names: "{{ hostvars['cilium-bgp-1.cam.ciscolabs.com']['egress_ips_with_names'] }}"
+    tenant_name: cilium-bgp
+    vrf: default
+
+  tasks:
+    - name: Get the current state of the ESGs
+      cisco.aci.aci_esg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: k8s
+        state: query
+      register: current_esgs
+
+    - name: Create a list of the ESGs but ignore the once called 'nodes' as this is for our K8s Nodes and we don't wanna touch it
+      ansible.builtin.set_fact:
+        esgs: "{{ current_esgs.current[0].fvAp.children | default([])
+          | map(attribute='fvESg.attributes.name')
+            | select('match', '^(?!nodes$).*')
+            | list }}"
+
+    - name: Print the current state of the L3Out
+      ansible.builtin.debug:
+        var: esgs
+
+    - name: Calculate which ESGs needs to be added and which needs to be removed
+      ansible.builtin.set_fact:
+        missing_esgs: "{{ egress_ips_with_names.keys() | difference(esgs) }}"
+        stale_esgs: "{{ esgs | difference(egress_ips_with_names.keys()) }}"
+
+    - name: Print the difference
+      ansible.builtin.debug:
+        var: missing_esgs, stale_esgs
+
+      # Delete first to avoid potential IP Selectior conflicts
+    - name: Delate ESGs that are not anymore needed
+      cisco.aci.aci_esg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: k8s
+        name: "{{ item }}"
+        vrf: "{{ vrf }}"
+        state: absent
+      loop: "{{ stale_esgs }}"
+
+    - name: Add a new ESG
+      cisco.aci.aci_esg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: k8s
+        name: "{{ item }}"
+        vrf: "{{ vrf }}"
+      loop: "{{ egress_ips_with_names.keys() }}"
+      when: item in missing_esgs
+
+    - name: Add an IP subnet selector
+      cisco.aci.aci_esg_ip_subnet_selector:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: k8s
+        esg: "{{ item.0.key }}"
+        ip: "{{ item.1 }}/32"
+      loop: "{{ egress_ips_with_names | dict2items | subelements('value') }}"
+      loop_control:
+        label: "{{ item.0.key }}"
