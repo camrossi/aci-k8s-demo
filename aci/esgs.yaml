@@ -84,7 +84,7 @@
       ansible.builtin.debug:
         var: missing_esgs, stale_esgs
 
-      # Delete first to avoid potential IP Selectior conflicts
+      # Delete first to avoid potential IP Selector conflicts
     - name: Delate ESGs that are not anymore needed
       cisco.aci.aci_esg:
         <<: *aci_login
@@ -105,6 +105,8 @@
       loop: "{{ egress_ips_with_names.keys() }}"
       when: item in missing_esgs
 
+      # I do not handle IP Selector Changes. If you modify the `egressIP` in the Cilium CRD this will break
+      # This workflow. We should add a check for this and delete the IP Selector if the IP has changed.
     - name: Add an IP subnet selector
       cisco.aci.aci_esg_ip_subnet_selector:
         <<: *aci_login
@@ -121,6 +123,7 @@
         <<: *aci_login
         tenant: "{{ tenant_name }}"
         ap: "{{ app_profile }}"
-        esg: anstest
+        esg: "{{ item }}"
         contract: esg_oob
         contract_type: consumer
+      loop: "{{ egress_ips_with_names.keys() }}"
