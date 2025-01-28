@@ -52,6 +52,7 @@
       state: present
     egress_ips_with_names: "{{ hostvars['cilium-bgp-1.cam.ciscolabs.com']['egress_ips_with_names'] }}"
     tenant_name: cilium-bgp
+    app_profile: k8s
     vrf: default
 
   tasks:
@@ -59,7 +60,7 @@
       cisco.aci.aci_esg:
         <<: *aci_login
         tenant: "{{ tenant_name }}"
-        ap: k8s
+        ap: "{{ app_profile }}"
         state: query
       register: current_esgs
 
@@ -88,7 +89,7 @@
       cisco.aci.aci_esg:
         <<: *aci_login
         tenant: "{{ tenant_name }}"
-        ap: k8s
+        ap: "{{ app_profile }}"
         name: "{{ item }}"
         vrf: "{{ vrf }}"
         state: absent
@@ -98,7 +99,7 @@
       cisco.aci.aci_esg:
         <<: *aci_login
         tenant: "{{ tenant_name }}"
-        ap: k8s
+        ap: "{{ app_profile }}"
         name: "{{ item }}"
         vrf: "{{ vrf }}"
       loop: "{{ egress_ips_with_names.keys() }}"
@@ -108,9 +109,18 @@
       cisco.aci.aci_esg_ip_subnet_selector:
         <<: *aci_login
         tenant: "{{ tenant_name }}"
-        ap: k8s
+        ap: "{{ app_profile }}"
         esg: "{{ item.0.key }}"
         ip: "{{ item.1 }}/32"
       loop: "{{ egress_ips_with_names | dict2items | subelements('value') }}"
       loop_control:
         label: "{{ item.0.key }}"
+
+    - name: Add an Contract to the ESGs
+      cisco.aci.aci_esg_ip_subnet_selector:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: "{{ app_profile }}"
+        esg: anstest
+        contract: esg_oob
+        contract_type: consumer
