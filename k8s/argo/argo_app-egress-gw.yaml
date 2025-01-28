@@ -5,7 +5,7 @@ metadata:
     notifications.argoproj.io/subscribe.on-sync-succeeded.eda: ""
     notifications.argoproj.io/subscribe.on-deleted.eda: ""
     rule: egress
-  name: egress-1
+  name: egress-gateways
   namespace: openshift-gitops
 spec:
   destination:

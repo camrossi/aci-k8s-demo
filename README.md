@@ -1,9 +1,9 @@
 # ACI K8S and Ansible Driven Automation
 
-This GitRepo contains a demo to show how we can leverage the power of Cisco ACI Fabric, Kubernetes and Red Hat Ansible's event-driven automation to dynamically program the ACI fabric.
-Our goal is to efficiently expose a Kubernetes LoadBalancer Service IP, illustrating how these technologies can work in tandem to enhance network agility and responsiveness.
-Cisco ACI provides a robust and scalable network infrastructure that simplifies complex data center operations. By integrating it with Kubernetes, the leading container orchestration platform, we can automate the management of network resources to support dynamic application needs.
-Additionally, with Red Hat Ansible's event-driven automation, we can respond to changes and events in real-time, ensuring that our network configuration aligns seamlessly with the evolving demands of our Kubernetes environment.
+This Git repository contains a demo designed to showcase how we can leverage the power of Cisco ACI Fabric, Kubernetes, and Red Hat Ansible's event-driven automation to dynamically program the ACI fabric. Our goal is to efficiently expose a Kubernetes LoadBalancer Service IP, illustrating how these technologies can work in tandem to enhance network agility and responsiveness. Cisco ACI provides a robust and scalable network infrastructure that simplifies complex data center operations. By integrating it with Kubernetes, the leading container orchestration platform, we can automate the management of network resources to support dynamic application needs.
+
+Additionally as part of this integration, we will also automate the configuration of the Endpoint Security Groups (ESGs) for Pod-initiated traffic, further streamlining network operations and security.
+
 Throughout this demo, we will walk through the process of setting up this integration, demonstrate how event-driven automation can trigger network changes, and showcase the resulting efficiency and flexibility in managing Kubernetes services.
 
 # Prerequisites
@@ -25,15 +25,23 @@ In case you want to replicate this workflow in your lab you will need the follow
         subgraph K8 Cluster
             N["Nodes"]
             IN["Ingress Nodes"]
+            EN["Egress Nodes"]
         end
         subgraph ACI
             L3OUT
             Node_ESG
+            Egress_ESGs
         end
         Clients <--> L3OUT
+        ext["External Services"]
+        LegacyFW
         N <--> Node_ESG
         IN <--> L3OUT
         IN <--> Node_ESG
+        EN <--> Node_ESG
+        EN --> Egress_ESGs
+        Egress_ESGs --> LegacyFW
+        LegacyFW --> ext
 ```
 
 # Automation Architecture
@@ -66,7 +74,7 @@ In case you want to replicate this workflow in your lab you will need the follow
         O -- "Commit Code Into Git" --> GR
         GR -- "Argo Detect Change in Git" --> KA
         KA -- "Webhook Call, Pass Application Context" --> RBA
-        J -- "Update ExtEPG Config" --> APIC
+        J -- "Update ExtEPG or ESG Config" --> APIC
 ```
 
 
@@ -77,7 +85,7 @@ In case you want to replicate this workflow in your lab you will need the follow
 * The K8s Application triggers a webhook call, passing the application context to the Rule Book Activation in the Ansible Automation Platform.
 * The Rule Book Activation invokes the Job Template (passing the application context).
 * The Job Template triggers an Ansible playbook, which executes the Job.
-    * The Job add/remove external EPGs from ACI
+    * The Job add/remove external EPGs or ESGs from ACI
 
 # Configuration Details
 
@@ -135,19 +143,34 @@ I installed `Ansible Automation Platform` in my `OpenShift` cluster using the `O
     * Image: quay.io/ansible/ansible-rulebook:v1.1.2
     * Org: Default
 
-* Create a Rule Book In your Git Repo: In this lab we are using the [external_epgs.yaml](extensions/eda/rulebooks/external_epgs.yaml) rule book. The rule books MUST be placed under the `extensions/eda/rulebooks/` path in the GitRepo. 
+* Create a Rule Book In your Git Repo: In this lab we are using the [argo_rules.yaml](extensions/eda/rulebooks/argo_rules.yaml) rule book. The rule books MUST be placed under the `extensions/eda/rulebooks/` path in the GitRepo. 
 
 This rule book is configured to: 
 * be triggered by the `condition: event.meta.eda_event_stream_name == 'argocd'`
-* Start a Job from the `ManageExtEPGs` Job Template (that we will configure later)
-* Pass to the Job Template the `extra_vars`: `namespace: "{{ event.payload.namespace }}"`
-    * `event.payload` is the HTTP Body Of the ArgoCD Webhook. If you check the ArgoCD section you will see that the body is poulated with
+* If the ArgoCD Application is annotated as `rule=ingress`
+    * Start a Job from the `ManageExtEPGs` Job Template (that we will configure later)
+    * Pass to the Job Template the `extra_vars`: `namespace: "{{ event.payload.namespace }}"`
+* If the ArgoCD Application is annotated as `rule=egress`
+    * Start a Job from the `ManageESGs` Job Template (that we will configure later)
+    * Pass to the Job Template the `extra_vars`: `resources: "{{ event.payload.resources }}"` that contains the status of all the Egress Gateways. 
+
+* `event.payload` is the HTTP Body Of the ArgoCD Webhook. If you check the ArgoCD section you will see that the body is populated with
     ```yaml
         body: |
-        {
-            "name": "{{.app.metadata.name}}",
-            "namespace": "{{.app.spec.destination.namespace}}",
-        }
+            {
+              "rule": "{{.app.metadata.annotations.rule}}",
+              "name": "{{.app.metadata.name}}",
+              "namespace": "{{.app.spec.destination.namespace}}",
+              "resources": [
+                {{range $index, $c := .app.status.resources }}
+                {
+                "kind": "{{$c.kind}}",
+                "name": "{{$c.name}}"
+                },
+                {{end}}
+              ]
+
+            }
     ```
 
 * Create a Project Using the `Rule Book`:
@@ -159,12 +182,12 @@ This rule book is configured to:
 * Create a Rule Book Activation:
     * Name: A name
     * Project: The project you created in the previous step
-    * Rulebook: `external_epgs.yaml` this should be an auto populated drop down menu. The data comes directly from Git
+    * Rulebook: `argo_rules.yaml` this should be an auto populated drop down menu. The data comes directly from Git
     * Event streams: Click on the cog and you should be able to map the rule book `source.name` variable with the `Event Stream` configured in the UI
     * Credential: Select the Credentials for the Ansible Automation Platform.
     * Decision environment: Default
 
-Note: Every time you change the Status of the GitRepo you need to Sync the Project for the `external_epgs.yaml` rule book to be updated locally. 
+Note: Every time you change the Status of the GitRepo you need to Sync the Project for the `argo_rules.yaml` rule book to be updated locally. 
 
 ### Set up Automation Execution:
 
@@ -225,7 +248,8 @@ Note: Every time you change the Status of the GitRepo you need to Sync the Proje
     * Extra variables: This is **very important**: In order to receive the Event Driven Automation variables (the namespace name) you need to enable `Prompt on launch` or the variable will not be set.
         * I also set here `aci_validate_certs: 'no'` but this could be set also in other places.
 
-Note: Every time you change the Status of the GitRepo you need to Sync the Project for the `k8s_svc.yaml` play book to be updated locally. 
+* Repeat the aobve step also for the `aci/esgs.yaml` playbook.
+Note: Every time you change the Status of the GitRepo you need to Sync the Project for the playbook to be updated locally. 
 
 
 ## ArgoCD 
@@ -288,10 +312,12 @@ metadata:
   annotations:
     notifications.argoproj.io/subscribe.on-sync-succeeded.eda: ""
     notifications.argoproj.io/subscribe.on-deleted.eda: ""
+    rule: ingress #or egress depending on what you are configuring
 ```
 
 A demo App config can be found here: [argo_app.yaml](k8s/argo/argo_app.yaml)
-# Demo
+A demo Egress Gateway Config can be found here: [EgressGatewayPolicies](k8s/egress-gw/EgressGatewayPolicies.yaml)
+# Demo 1 - External EPGs
 
 With all the components now set up, we are ready to deploy applications and seamlessly add or remove Services of Type LoadBalancer. The Cisco ACI fabric will automatically adjust its configuration to accommodate these changes, demonstrating the power of our integrated system.
 
@@ -300,3 +326,6 @@ This demonstration is designed to be straightforward, focusing on exposing servi
 This demo serves as a foundation for exploring the extensive capabilities of these technologies, providing a glimpse into how they can be tailored to meet diverse operational needs.
 
 Video Demo: [Unified GitOps and NetOps with ACI, K8s, Ansible and ArgoCD](https://raw.githubusercontent.com/camrossi/aci-k8s-demo/refs/heads/main/demo/extEPGs.mp4)
+
+# Demo 2 - POD Initiated Traffic and ESGs
+
