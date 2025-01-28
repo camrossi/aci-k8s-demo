@@ -117,7 +117,7 @@
         label: "{{ item.0.key }}"
 
     - name: Add an Contract to the ESGs
-      cisco.aci.aci_esg_ip_subnet_selector:
+      cisco.aci.aci_esg_to_contract:
         <<: *aci_login
         tenant: "{{ tenant_name }}"
         ap: "{{ app_profile }}"
