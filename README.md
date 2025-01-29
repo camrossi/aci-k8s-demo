@@ -26,22 +26,28 @@ In case you want to replicate this workflow in your lab you will need the follow
             N["Nodes"]
             IN["Ingress Nodes"]
             EN["Egress Nodes"]
+            POD
         end
         subgraph ACI
             L3OUT
             Node_ESG
             Egress_ESGs
         end
-        Clients <--> L3OUT
-        ext["External Services"]
-        LegacyFW
+        subgraph LegacyApps
+            ext["External Services"]
+            LegacyFW
+        end
+        Clients
+        Clients --> L3OUT
         N <--> Node_ESG
-        IN <--> L3OUT
-        IN <--> Node_ESG
+        L3OUT  --> IN
+        IN --> Node_ESG
         EN <--> Node_ESG
+        POD --> EN
         EN --> Egress_ESGs
         Egress_ESGs --> LegacyFW
         LegacyFW --> ext
+        
 ```
 
 # Automation Architecture
