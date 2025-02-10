@@ -43,7 +43,93 @@ In case you want to replicate this workflow in your lab you will need the follow
         L3OUT  --> IN
         IN --> Node_ESG
         EN <--> Node_ESG
-        POD --> EN
+        POD --> ENapiVersion: kubevirt.io/v1
+  kind: VirtualMachine
+  metadata:
+    annotations:
+      kubemacpool.io/transaction-timestamp: "2025-01-30T05:46:07.858076703Z"
+      kubevirt.io/latest-observed-api-version: v1
+      kubevirt.io/storage-observed-api-version: v1
+    creationTimestamp: "2025-01-30T04:52:58Z"
+    finalizers:
+    - kubevirt.io/virtualMachineControllerFinalize
+    generation: 24
+    name: cp-1
+    namespace: ocp-cilium-c1
+    resourceVersion: "1219953368"
+    uid: bf4eb73c-4b15-48bf-978a-4fb3f65e90b3
+  spec:
+    dataVolumeTemplates:
+    - metadata:
+        creationTimestamp: null
+        name: dv-cp-1-orange-kiwi-46
+      spec:
+        source:
+          blank: {}
+        storage:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 100Gi
+          storageClassName: lvms-vg1-bm02
+          volumeMode: Filesystem
+    instancetype:
+      kind: virtualmachineclusterinstancetype
+      name: o1.xlarge
+      revisionName: cp-1-o1.xlarge-v1beta1-f84784fd-70ce-4283-b1c3-758869fe189b-1
+    preference:
+      kind: virtualmachineclusterpreference
+      name: rhel.9
+      revisionName: cp-1-rhel.9-v1beta1-1c7608b4-9716-4067-ac0b-2d666c91c052-3
+    running: true
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          network.kubevirt.io/headlessService: headless
+      spec:
+        architecture: amd64
+        domain:
+          devices:
+            autoattachPodInterface: false
+            disks:
+            - bootOrder: 1
+              cdrom:
+                bus: scsi
+              name: cdrom
+              shareable: true
+            - disk:
+                bus: virtio
+              name: disk-fuchsia-lobster-69
+            interfaces:
+            - bridge: {}
+              macAddress: 02:a0:e8:00:00:0a
+              model: virtio
+              name: nic-gray-guineafowl-45
+          machine:
+            type: pc-q35-rhel9.4.0
+          resources: {}
+        networks:
+        - multus:
+            networkName: node
+          name: nic-gray-guineafowl-45
+        subdomain: headless
+        volumes:
+        - cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              chpasswd:
+                expire: false
+              password: 7u1u-4ppf-hkob
+              user: rhel
+          name: cloudinitdisk
+        - name: cdrom
+          persistentVolumeClaim:
+            claimName: ocp-cilium-c1-agent
+        - dataVolume:
+            name: dv-cp-1-orange-kiwi-46
+          name: disk-fuchsia-lobster-69
         EN --> Egress_ESGs
         Egress_ESGs --> LegacyFW
         LegacyFW --> ext
