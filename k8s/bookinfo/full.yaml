@@ -284,8 +284,7 @@ metadata:
   labels:
     app: productpage
     service: productpage
-    advertise: bgp
-    global: "true"
+    service.cilium.io/global: "true"
   annotations:
     service.cilium.io/global: "true"
 spec:
