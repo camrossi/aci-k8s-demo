@@ -140,6 +140,8 @@ metadata:
   labels:
     app: reviews
     service: reviews
+  annotations: 
+      service.cilium.io/global: "true"
 spec:
   ports:
   - port: 9080
@@ -284,6 +286,7 @@ metadata:
   labels:
     app: productpage
     service: productpage
+  annotations: 
     service.cilium.io/global: "true"
 spec:
   ports:
