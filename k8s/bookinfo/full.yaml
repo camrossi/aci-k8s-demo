@@ -34,11 +34,8 @@ kind: Service
 metadata:
   name: details
   labels:
-    advertise: bgp
     app: details
     service: details
-  annotations:
-    service.cilium.io/global: "true"
 spec:
   ports:
   - port: 9080
@@ -288,6 +285,8 @@ metadata:
     app: productpage
     service: productpage
     advertise: bgp
+  annotations:
+    service.cilium.io/global: "true"
 spec:
   ports:
   - port: 9080
