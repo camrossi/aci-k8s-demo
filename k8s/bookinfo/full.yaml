@@ -289,7 +289,7 @@ metadata:
     advertise: bgp
     global: "false"
   annotations: 
-    service.cilium.io/global: "true"
+    service.cilium.io/global: "false"
     service.cilium.io/affinity: "remote"
 spec:
   ports:
