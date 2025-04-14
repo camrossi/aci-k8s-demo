@@ -290,7 +290,7 @@ metadata:
     global: "true"
   annotations: 
     service.cilium.io/global: "true"
-    service.cilium.io/affinity: "local"
+    service.cilium.io/affinity: "remote"
 spec:
   ports:
   - port: 9080
