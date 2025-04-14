@@ -288,14 +288,13 @@ metadata:
     global: "true"
   annotations:
     service.cilium.io/global: "true"
-    service.cilium.io/affinity: "remote"
 spec:
   ports:
   - port: 9080
     name: http
   selector:
     app: productpage
-  type: LoadBalancer
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: ServiceAccount
