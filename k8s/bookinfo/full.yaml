@@ -287,7 +287,7 @@ metadata:
     advertise: bgp
     global: "true"
   annotations:
-    service.cilium.io/global: "false"
+    service.cilium.io/global: "true"
 spec:
   ports:
   - port: 9080
