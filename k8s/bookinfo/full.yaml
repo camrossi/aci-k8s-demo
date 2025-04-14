@@ -286,6 +286,8 @@ metadata:
   labels:
     app: productpage
     service: productpage
+    advertice: bgp
+    global: "true"
   annotations: 
     service.cilium.io/global: "true"
 spec:
@@ -294,7 +296,7 @@ spec:
     name: http
   selector:
     app: productpage
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: ServiceAccount
